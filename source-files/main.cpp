@@ -21,7 +21,7 @@
 
 // Project includes
 #include "maths_funcs.h"
-//#include "ik_maths.h"
+#include "mesh_loader.h"
 
 // GLM includes
 #include "glm/glm.hpp"
@@ -33,31 +33,16 @@ MESH TO LOAD
 ----------------------------------------------------------------------------*/
 // this mesh is a dae file format but you should be able to use any other format too, obj is typically what is used
 // put the mesh in your project directory, or provide a filepath for it here
-#define ARM "U:/animation_proj/Project1/Project1/cone.obj"
-#define BODY "U:/animation_proj/Project1/Project1/body.obj"
-#define BALL "U:/animation_proj/Project1/Project1/ball.obj"
-#define JOINT "U:/animation_proj/Project1/Project1/joint.obj"
+MeshLoader neutral("U:/animation_proj/Project1/Project1/face.obj");
+
 /*----------------------------------------------------------------------------
 ----------------------------------------------------------------------------*/
-
-#pragma region SimpleTypes
-typedef struct
-{
-	size_t mPointCount = 0;
-	std::vector<vec3> mVertices;
-	std::vector<vec3> mNormals;
-	std::vector<vec2> mTextureCoords;
-} ModelData;
-#pragma endregion SimpleTypes
 
 using namespace std;
 GLuint shaderProgramID;
 
-ModelData ball, body, arm, joint;
-unsigned int vao1, vao2, vao3, vao4 = 0;
-
-int width = 800;
-int height = 600;
+int width = 1400;
+int height = 800;
 
 GLuint loc1, loc2, loc3;
 
@@ -69,64 +54,9 @@ glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 int projType = 0;
 float fov = 45.0f;
 
-#pragma region MESH LOADING
-/*----------------------------------------------------------------------------
-MESH LOADING FUNCTION
-----------------------------------------------------------------------------*/
+unsigned int neutral_vbo1, neutral_vbo2, neutral_vao;
 
-ModelData load_mesh(const char* file_name) {
-	ModelData modelData;
-
-	/* Use assimp to read the model file, forcing it to be read as    */
-	/* triangles. The second flag (aiProcess_PreTransformVertices) is */
-	/* relevant if there are multiple meshes in the model file that   */
-	/* are offset from the origin. This is pre-transform them so      */
-	/* they're in the right position.                                 */
-	const aiScene* scene = aiImportFile(
-		file_name,
-		aiProcess_Triangulate | aiProcess_PreTransformVertices
-	);
-
-	if (!scene) {
-		fprintf(stderr, "ERROR: reading mesh %s\n", file_name);
-		return modelData;
-	}
-
-	printf("  %i materials\n", scene->mNumMaterials);
-	printf("  %i meshes\n", scene->mNumMeshes);
-	printf("  %i textures\n", scene->mNumTextures);
-
-	for (unsigned int m_i = 0; m_i < scene->mNumMeshes; m_i++) {
-		const aiMesh* mesh = scene->mMeshes[m_i];
-		printf("    %i vertices in mesh\n", mesh->mNumVertices);
-		modelData.mPointCount += mesh->mNumVertices;
-		for (unsigned int v_i = 0; v_i < mesh->mNumVertices; v_i++) {
-			if (mesh->HasPositions()) {
-				const aiVector3D* vp = &(mesh->mVertices[v_i]);
-				modelData.mVertices.push_back(vec3(vp->x, vp->y, vp->z));
-			}
-			if (mesh->HasNormals()) {
-				const aiVector3D* vn = &(mesh->mNormals[v_i]);
-				modelData.mNormals.push_back(vec3(vn->x, vn->y, vn->z));
-			}
-			if (mesh->HasTextureCoords(0)) {
-				const aiVector3D* vt = &(mesh->mTextureCoords[0][v_i]);
-				modelData.mTextureCoords.push_back(vec2(vt->x, vt->y));
-			}
-			if (mesh->HasTangentsAndBitangents()) {
-				/* You can extract tangents and bitangents here              */
-				/* Note that you might need to make Assimp generate this     */
-				/* data for you. Take a look at the flags that aiImportFile  */
-				/* can take.                                                 */
-			}
-		}
-	}
-
-	aiReleaseImport(scene);
-	return modelData;
-}
-
-#pragma endregion MESH LOADING
+Eigen::VectorXf f0 = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1); // F0
 
 // Shader Functions- click on + to expand
 #pragma region SHADER_FUNCTIONS
@@ -234,50 +164,42 @@ GLuint CompileShaders()
 
 // VBO Functions - click on + to expand
 #pragma region VBO_FUNCTIONS
-void generateObjectBufferMesh1(GLuint vao, ModelData mesh_data, GLuint programID) {
-	/*----------------------------------------------------------------------------
-	LOAD MESH HERE AND COPY INTO BUFFERS
-	----------------------------------------------------------------------------*/
+void generateObjectBufferMesh(Eigen::VectorXf f) {
+	for (int i = 0; i < neutral.meshVertices.size(); i++) {
+		neutral.meshVertices[i] = f(i);
+	}
 
-	//Note: you may get an error "vector subscript out of range" if you are using this code for a mesh that doesnt have positions and normals
-	//Might be an idea to do a check for that before generating and binding the buffer.
+	// Model
+	loc1 = glGetAttribLocation(shaderProgramID, "vertex_position");
+	loc2 = glGetAttribLocation(shaderProgramID, "vertex_normal");
+	loc3 = glGetAttribLocation(shaderProgramID, "vertex_texture");
 
-	unsigned int vp_vbo = 0;
-	unsigned int vn_vbo = 0;
-	unsigned int vt_vbo = 0;
+	glGenBuffers(1, &neutral_vbo1);
+	glBindBuffer(GL_ARRAY_BUFFER, neutral_vbo1);
+	glBufferData(GL_ARRAY_BUFFER, 3 * neutral.numVertices * sizeof(float), &neutral.meshVertices[0], GL_STATIC_DRAW);
 
-	loc1 = glGetAttribLocation(programID, "vertex_position");
-	loc2 = glGetAttribLocation(programID, "vertex_normal");
-	loc3 = glGetAttribLocation(programID, "vertex_texture");
+	glGenBuffers(1, &neutral_vbo2);
+	glBindBuffer(GL_ARRAY_BUFFER, neutral_vbo2);
+	glBufferData(GL_ARRAY_BUFFER, 3 * neutral.numVertices * sizeof(float), &neutral.meshNormals[0], GL_STATIC_DRAW);
 
-	glGenBuffers(1, &vp_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vp_vbo);
-	glBufferData(GL_ARRAY_BUFFER, mesh_data.mPointCount * sizeof(vec3), &mesh_data.mVertices[0], GL_STATIC_DRAW);
-
-	glGenBuffers(1, &vn_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vn_vbo);
-	glBufferData(GL_ARRAY_BUFFER, mesh_data.mPointCount * sizeof(vec3), &mesh_data.mNormals[0], GL_STATIC_DRAW);
-
-	glGenBuffers(1, &vt_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vt_vbo);
-	glBufferData(GL_ARRAY_BUFFER, mesh_data.mPointCount * sizeof(vec2), &mesh_data.mTextureCoords[0], GL_STATIC_DRAW);
-
-	glBindVertexArray(vao);
+	glGenVertexArrays(1, &neutral_vao);
+	glBindVertexArray(neutral_vao);
 
 	glEnableVertexAttribArray(loc1);
-	glBindBuffer(GL_ARRAY_BUFFER, vp_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, neutral_vbo1);
 	glVertexAttribPointer(loc1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
 	glEnableVertexAttribArray(loc2);
-	glBindBuffer(GL_ARRAY_BUFFER, vn_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, neutral_vbo2);
 	glVertexAttribPointer(loc2, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-	glEnableVertexAttribArray(loc3);
-	glBindBuffer(GL_ARRAY_BUFFER, vt_vbo);
-	glVertexAttribPointer(loc3, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
 }
 #pragma endregion VBO_FUNCTIONS
+
+void createF0Matrix() {
+	for (int i = 0; i < neutral.meshVertices.size(); i++) {
+		f0(i) = neutral.meshVertices[i];
+	}
+}
 
 void display() {
 
@@ -314,8 +236,7 @@ void display() {
 	// --------------------------------- BODY --------------------------------------
 
 	glm::mat4 body_model = glm::mat4(1.0f);
-	body_model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -1.0f, 0.0f));
-	body_model = glm::rotate(body_model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	body_model = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,0));
 
 	glm::mat4 global0 = body_model;
 
@@ -324,8 +245,8 @@ void display() {
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, glm::value_ptr(view));
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, glm::value_ptr(global0));
 
-	glBindVertexArray(vao1);
-	glDrawArrays(GL_TRIANGLES, 0, body.mPointCount);
+	glBindVertexArray(neutral_vao);
+	glDrawArrays(GL_TRIANGLES, 0, neutral.numVertices);
 
 	glutSwapBuffers();
 }
@@ -351,10 +272,8 @@ void init()
 	// Set up the shaders
 	GLuint shaderProgramID = CompileShaders();
 	// load mesh into a vertex buffer array
-
-	body = load_mesh(BODY);
-	glGenVertexArrays(1, &vao1);
-	generateObjectBufferMesh1(vao1, body, shaderProgramID);
+	createF0Matrix();
+	generateObjectBufferMesh(f0);
 
 }
 
