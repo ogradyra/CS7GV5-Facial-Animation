@@ -42,6 +42,8 @@ MESH TO LOAD
 // this mesh is a dae file format but you should be able to use any other format too, obj is typically what is used
 // put the mesh in your project directory, or provide a filepath for it here
 MeshLoader neutral("U:/animation_proj/Project1/Project1/models/neutral.obj");
+MeshLoader jaw_open("U:/animation_proj/Project1/Project1/models/Mery_jaw_open.obj");
+MeshLoader kiss("U:/animation_proj/Project1/Project1/models/Mery_kiss.obj");
 MeshLoader r_smile("U:/animation_proj/Project1/Project1/models/Mery_r_smile.obj");
 MeshLoader r_suck("U:/animation_proj/Project1/Project1/models/Mery_r_suck.obj");
 MeshLoader r_sad("U:/animation_proj/Project1/Project1/models/Mery_r_sad.obj");
@@ -67,7 +69,9 @@ MeshLoader l_brow_lower("U:/animation_proj/Project1/Project1/models/Mery_l_brow_
 /*----------------------------------------------------------------------------
 ----------------------------------------------------------------------------*/
 
-const char* expressions[23] = {
+const char* expressions[25] = {
+	"jaw_open",
+	"kiss",
 	"l_smile",
 	"l_suck",
 	"l_sad",
@@ -260,6 +264,8 @@ void generateObjectBufferMesh(Eigen::VectorXf face) {
 
 void blendshape_array() {
 
+	dataArray.push_back(jaw_open);
+	dataArray.push_back(kiss);
 	dataArray.push_back(l_smile);
 	dataArray.push_back(l_suck);
 	dataArray.push_back(l_sad);
