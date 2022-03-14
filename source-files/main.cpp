@@ -34,15 +34,65 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
+
+#pragma region MESH LOADING
 /*----------------------------------------------------------------------------
 MESH TO LOAD
 ----------------------------------------------------------------------------*/
 // this mesh is a dae file format but you should be able to use any other format too, obj is typically what is used
 // put the mesh in your project directory, or provide a filepath for it here
 MeshLoader neutral("U:/animation_proj/Project1/Project1/models/neutral.obj");
-MeshLoader smile("U:/animation_proj/Project1/Project1/models/smile.obj");
+MeshLoader r_smile("U:/animation_proj/Project1/Project1/models/Mery_r_smile.obj");
+MeshLoader r_suck("U:/animation_proj/Project1/Project1/models/Mery_r_suck.obj");
+MeshLoader r_sad("U:/animation_proj/Project1/Project1/models/Mery_r_sad.obj");
+MeshLoader r_puff("U:/animation_proj/Project1/Project1/models/Mery_r_puff.obj");
+MeshLoader r_nose_wrinkle("U:/animation_proj/Project1/Project1/models/Mery_r_nose_wrinkle.obj");
+MeshLoader r_eye_upper_open("U:/animation_proj/Project1/Project1/models/Mery_r_eye_upper_open.obj");
+MeshLoader r_eye_lower_open("U:/animation_proj/Project1/Project1/models/Mery_r_lower_open.obj");
+MeshLoader r_eye_closed("U:/animation_proj/Project1/Project1/models/Mery_r_eye_closed.obj");
+MeshLoader r_brow_raise("U:/animation_proj/Project1/Project1/models/Mery_r_brow_raisesmile.obj");
+MeshLoader r_brow_narrow("U:/animation_proj/Project1/Project1/models/Mery_r_brow_narrow.obj");
+MeshLoader r_brow_lower("U:/animation_proj/Project1/Project1/models/Mery_r_brow_lower.obj");
+MeshLoader l_smile("U:/animation_proj/Project1/Project1/models/Mery_l_smile.obj");
+MeshLoader l_suck("U:/animation_proj/Project1/Project1/models/Mery_l_suck.obj");
+MeshLoader l_sad("U:/animation_proj/Project1/Project1/models/Mery_l_sad.obj");
+MeshLoader l_puff("U:/animation_proj/Project1/Project1/models/Mery_l_puff.obj");
+MeshLoader l_nose_wrinkle("U:/animation_proj/Project1/Project1/models/Mery_l_nose_wrinkle.obj");
+MeshLoader l_eye_upper_open("U:/animation_proj/Project1/Project1/models/Mery_l_eye_upper_open.obj");
+MeshLoader l_eye_lower_open("U:/animation_proj/Project1/Project1/models/Mery_l_lower_open.obj");
+MeshLoader l_eye_closed("U:/animation_proj/Project1/Project1/models/Mery_l_eye_closed.obj");
+MeshLoader l_brow_raise("U:/animation_proj/Project1/Project1/models/Mery_l_brow_raisesmile.obj");
+MeshLoader l_brow_narrow("U:/animation_proj/Project1/Project1/models/Mery_l_brow_narrow.obj");
+MeshLoader l_brow_lower("U:/animation_proj/Project1/Project1/models/Mery_l_brow_lower.obj");
 /*----------------------------------------------------------------------------
 ----------------------------------------------------------------------------*/
+
+const char* expressions[23] = {
+	"l_smile",
+	"l_suck",
+	"l_sad",
+	"l_puff",
+	"l_nose_wrinkle",
+	"l_eye_upper_open",
+	"l_eye_lower_open",
+	"l_eye_closed",
+	"l_brow_raise",
+	"l_brow_narrow",
+	"l_brow_lower",
+	"r_smile",
+	"r_suck",
+	"r_sad",
+	"r_puff",
+	"r_nose_wrinkle",
+	"r_eye_upper_open",
+	"r_eye_lower_open",
+	"r_eye_closed",
+	"r_brow_raise",
+	"r_brow_narrow",
+	"r_brow_lower"				
+};
+
+#pragma endregion MESH LOADING
 
 using namespace std;
 GLuint shaderProgramID;
@@ -66,15 +116,9 @@ int k = 24;
 Eigen::VectorXf f0 = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1); // F0
 Eigen::MatrixXf B = Eigen::MatrixXf::Zero(neutral.numVertices * 3, k); // B
 Eigen::VectorXf w = Eigen::VectorXf::Zero(k, 1); // w
-
-std::vector<float> weight;
 Eigen::VectorXf f = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1); // F
-float x;
 
 std::vector<MeshLoader> dataArray;
-
-const char* glsl_version = "#version 130";
-GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
 
 // Shader Functions- click on + to expand
 #pragma region SHADER_FUNCTIONS
@@ -216,7 +260,28 @@ void generateObjectBufferMesh(Eigen::VectorXf face) {
 
 void blendshape_array() {
 
-	dataArray.push_back(smile);
+	dataArray.push_back(l_smile);
+	dataArray.push_back(l_suck);
+	dataArray.push_back(l_sad);
+	dataArray.push_back(l_puff);
+	dataArray.push_back(l_nose_wrinkle);
+	dataArray.push_back(l_eye_upper_open);
+	dataArray.push_back(l_eye_lower_open);
+	dataArray.push_back(l_eye_closed);
+	dataArray.push_back(l_brow_raise);
+	dataArray.push_back(l_brow_narrow);
+	dataArray.push_back(l_brow_lower);
+	dataArray.push_back(r_smile);
+	dataArray.push_back(r_suck);
+	dataArray.push_back(r_sad);
+	dataArray.push_back(r_puff);
+	dataArray.push_back(r_nose_wrinkle);
+	dataArray.push_back(r_eye_upper_open);
+	dataArray.push_back(r_eye_lower_open);
+	dataArray.push_back(r_eye_closed);
+	dataArray.push_back(r_brow_raise);
+	dataArray.push_back(r_brow_narrow);
+	dataArray.push_back(r_brow_lower);
 }
 
 void createF0Matrix() {
@@ -245,7 +310,11 @@ void display() {
 
 	ImGui::Begin("Facial Weights Controller");                   
 	
-	ImGui::SliderFloat("smile", &w[0], 0.0f, 1.0f);
+	for (int i = 0; i < dataArray.size(); i++) {
+
+		ImGui::SliderFloat(expressions[i], &w[i], 0.0f, 1.0f);
+
+	}
 
 	ImGui::End();
 
@@ -261,9 +330,6 @@ void display() {
 
 
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-	f = f0 + (B * w);
-	generateObjectBufferMesh(f);
 
 	glUseProgram(shaderProgramID);
 
@@ -284,24 +350,15 @@ void display() {
 	glm::mat4 view = glm::mat4(1.0f);
 	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
-	//Declare your uniform variables that will be used in your shader
-	int matrix_location = glGetUniformLocation(shaderProgramID, "model");
-	int view_mat_location = glGetUniformLocation(shaderProgramID, "view");
-	int proj_mat_location = glGetUniformLocation(shaderProgramID, "proj");
-
-	// --------------------------------- BODY --------------------------------------
-
-	glm::mat4 body_model = glm::mat4(1.0f);
-	body_model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-
-	glm::mat4 global0 = body_model;
-
-	// update uniforms & draw
-	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, glm::value_ptr(persp_proj));
-	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, glm::value_ptr(view));
-	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, glm::value_ptr(global0));
+	// --------------------------------- FACE --------------------------------------
 
 	glBindVertexArray(neutral_vao);
+	glm::mat4 model = glm::mat4(1.0f);
+
+	// update uniforms & draw
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgramID, "proj"), 1, GL_FALSE, glm::value_ptr(persp_proj));
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgramID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgramID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 	glDrawArrays(GL_TRIANGLES, 0, neutral.numVertices);
 
 	glutSwapBuffers();
@@ -309,6 +366,9 @@ void display() {
 
 
 void updateScene() {
+
+	f = f0 + (B * w);
+	generateObjectBufferMesh(f);
 
 	glutPostRedisplay();
 }
