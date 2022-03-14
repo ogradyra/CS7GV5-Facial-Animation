@@ -14,6 +14,11 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
+#include <GLFW/glfw3.h>
+#include <imgui.h>
+#include <imgui_impl_glut.h>
+#include <imgui_impl_opengl3.h>
+
 // Assimp includes
 #include <assimp/cimport.h> 
 #include <assimp/scene.h> 
@@ -33,8 +38,8 @@ MESH TO LOAD
 ----------------------------------------------------------------------------*/
 // this mesh is a dae file format but you should be able to use any other format too, obj is typically what is used
 // put the mesh in your project directory, or provide a filepath for it here
-MeshLoader neutral("U:/animation_proj/Project1/Project1/face.obj");
-
+MeshLoader neutral("U:/animation_proj/Project1/Project1/models/neutral.obj");
+MeshLoader smile("U:/animation_proj/Project1/Project1/models/smile.obj");
 /*----------------------------------------------------------------------------
 ----------------------------------------------------------------------------*/
 
@@ -47,7 +52,7 @@ int height = 800;
 GLuint loc1, loc2, loc3;
 
 // camera stuff
-glm::vec3 cameraPos = glm::vec3(1.0f, 2.0f, 16.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 16.0f, 38.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -56,7 +61,13 @@ float fov = 45.0f;
 
 unsigned int neutral_vbo1, neutral_vbo2, neutral_vao;
 
+int k = 24;
 Eigen::VectorXf f0 = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1); // F0
+Eigen::MatrixXf B = Eigen::MatrixXf::Zero(neutral.numVertices * 3, k); // B
+Eigen::VectorXf w = Eigen::VectorXf::Zero(k, 1); // w
+Eigen::VectorXf f = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1); // F
+
+std::vector<MeshLoader> dataArray;
 
 // Shader Functions- click on + to expand
 #pragma region SHADER_FUNCTIONS
@@ -195,9 +206,22 @@ void generateObjectBufferMesh(Eigen::VectorXf f) {
 }
 #pragma endregion VBO_FUNCTIONS
 
+void blendshape_array() {
+
+	dataArray.push_back(smile);
+}
+
 void createF0Matrix() {
 	for (int i = 0; i < neutral.meshVertices.size(); i++) {
 		f0(i) = neutral.meshVertices[i];
+	}
+}
+
+void createBMatrix() {
+	for (int n = 0; n < dataArray.size(); n++) {
+		for (int i = 0; i < dataArray[n].meshVertices.size(); i++) {
+			B(i, n) = dataArray[n].meshVertices[i] - f0[i];
+		}
 	}
 }
 
@@ -208,6 +232,10 @@ void display() {
 	glDepthFunc(GL_LESS); // depth-testing interprets a smaller value as "closer"
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// --------------------------------- UI --------------------------------------
+
+
 
 	// --------------------------------- CAMERA --------------------------------------
 
@@ -254,14 +282,6 @@ void display() {
 
 void updateScene() {
 
-	/*static DWORD last_time = 0;
-	DWORD curr_time = timeGetTime();
-	if (last_time == 0)
-		last_time = curr_time;
-	float delta = (curr_time - last_time) * 0.001f;
-	last_time = curr_time;*/
-
-	// Draw the next frame
 	glutPostRedisplay();
 }
 
