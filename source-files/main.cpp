@@ -124,6 +124,8 @@ Eigen::VectorXf f = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1); // F
 
 std::vector<MeshLoader> dataArray;
 
+bool animate = false;
+
 // Shader Functions- click on + to expand
 #pragma region SHADER_FUNCTIONS
 char* readShaderSource(const char* shaderFile) {
