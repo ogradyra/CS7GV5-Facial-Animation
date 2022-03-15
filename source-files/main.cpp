@@ -122,9 +122,10 @@ Eigen::MatrixXf B = Eigen::MatrixXf::Zero(neutral.numVertices * 3, k); // B
 Eigen::VectorXf w = Eigen::VectorXf::Zero(k, 1); // w
 Eigen::VectorXf f = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1); // F
 
+Eigen::MatrixXf weight = Eigen::MatrixXf::Zero(neutral.numVertices * 3, k);
 std::vector<MeshLoader> dataArray;
 
-bool animate = false;
+bool animate = true;
 
 // Shader Functions- click on + to expand
 #pragma region SHADER_FUNCTIONS
@@ -372,26 +373,47 @@ void display() {
 	glutSwapBuffers();
 }
 
-void readTextFile(){
-	
-   fstream newfile;
-   newfile.open("tpoint.txt",ios::out);  // open a file to perform write operation using file object
-   if(newfile.is_open())     //checking whether the file is open
-   {
-      newfile<<"Tutorials point \n"; //inserting text
-      newfile.close(); //close the file object
-   }
-   newfile.open("tpoint.txt",ios::in); //open a file to perform read operation using file object
-   if (newfile.is_open()){   //checking whether the file is open
-      string tp;
-      while(getline(newfile, tp)){  //read data from file object and put it into string.
-         cout << tp << "\n";   //print the data of the string
-      }
-      newfile.close();   //close the file object.
-	
-}	
+void readTextFile() {
+
+	std::ifstream input("animation.txt");
+	std::string line;
+	float value;
+
+	int pbs = 0;
+	while (std::getline(input, line))
+	{
+
+		for (int i = 0; i < dataArray.size(); i++)
+		{
+			std::stringstream newLine(line);
+			newLine >> value >> std::ws;
+			weight(pbs, i) = value;
+		}
+
+		pbs++;
+	}
+}
+
+int frame_num = 0;
 
 void updateScene() {
+
+	if (animate) {
+		
+		for (int i = 0; i < dataArray.size(); i++) {
+
+			// w is being set to zero always - weight array is wrong
+			w[i] = weight(frame_num, i);
+		}
+
+		frame_num++;
+
+		if (frame_num == weight.size()) {
+
+			animate = false;
+		}
+
+	}
 
 	f = f0 + (B * w);
 	generateObjectBufferMesh(f);
@@ -410,7 +432,7 @@ void init()
 	createF0Matrix();
 	createBMatrix();
 	generateObjectBufferMesh(f0);
-
+	readTextFile();
 }
 
 // Placeholder code for the keypress
@@ -448,7 +470,8 @@ void keypress(unsigned char key, int x, int y) {
 		std::cout << "camera pos: " << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << endl;
 		break;
 
-		// inverse kinematics
+	case 'p':
+		animate = true;
 
 	}
 
