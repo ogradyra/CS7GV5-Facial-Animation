@@ -55,7 +55,7 @@ MeshLoader r_nose_wrinkle("U:/animation_proj/Project1/Project1/models/Mery_r_nos
 MeshLoader r_eye_upper_open("U:/animation_proj/Project1/Project1/models/Mery_r_eye_upper_open.obj");
 MeshLoader r_eye_lower_open("U:/animation_proj/Project1/Project1/models/Mery_r_lower_open.obj");
 MeshLoader r_eye_closed("U:/animation_proj/Project1/Project1/models/Mery_r_eye_closed.obj");
-MeshLoader r_brow_raise("U:/animation_proj/Project1/Project1/models/Mery_r_brow_raisesmile.obj");
+MeshLoader r_brow_raise("U:/animation_proj/Project1/Project1/models/Mery_r_brow_raise.obj");
 MeshLoader r_brow_narrow("U:/animation_proj/Project1/Project1/models/Mery_r_brow_narrow.obj");
 MeshLoader r_brow_lower("U:/animation_proj/Project1/Project1/models/Mery_r_brow_lower.obj");
 MeshLoader l_smile("U:/animation_proj/Project1/Project1/models/Mery_l_smile.obj");
@@ -66,7 +66,7 @@ MeshLoader l_nose_wrinkle("U:/animation_proj/Project1/Project1/models/Mery_l_nos
 MeshLoader l_eye_upper_open("U:/animation_proj/Project1/Project1/models/Mery_l_eye_upper_open.obj");
 MeshLoader l_eye_lower_open("U:/animation_proj/Project1/Project1/models/Mery_l_lower_open.obj");
 MeshLoader l_eye_closed("U:/animation_proj/Project1/Project1/models/Mery_l_eye_closed.obj");
-MeshLoader l_brow_raise("U:/animation_proj/Project1/Project1/models/Mery_l_brow_raisesmile.obj");
+MeshLoader l_brow_raise("U:/animation_proj/Project1/Project1/models/Mery_l_brow_raise.obj");
 MeshLoader l_brow_narrow("U:/animation_proj/Project1/Project1/models/Mery_l_brow_narrow.obj");
 MeshLoader l_brow_lower("U:/animation_proj/Project1/Project1/models/Mery_l_brow_lower.obj");
 /*----------------------------------------------------------------------------
@@ -125,7 +125,6 @@ Eigen::MatrixXf B = Eigen::MatrixXf::Zero(neutral.numVertices * 3, k); // B
 Eigen::VectorXf w = Eigen::VectorXf::Zero(k, 1); // w
 Eigen::VectorXf f = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1); // F
 
-Eigen::MatrixXf weight = Eigen::MatrixXf::Zero(neutral.numVertices * 3, k);
 std::vector<MeshLoader> dataArray;
 
 Eigen::VectorXf m, m0;
@@ -383,44 +382,57 @@ void display() {
 	glutSwapBuffers();
 }
 
+Eigen::MatrixXf weight = Eigen::MatrixXf::Zero(neutral.numVertices * 3, k);
+
 void readTextFile() {
 
-	std::ifstream input("U:/animation_proj/Project1/Project1/animation.txt");
-	std::string line;
-	float value;
+	fstream newfile;
+	newfile.open("U:/animation_proj/Project1/Project1/animation.txt", ios::in); //open a file to perform read operation using file object
 
-	int pbs = 0;
-	while (std::getline(input, line))
-	{
+	if (newfile.is_open()) { //checking whether the file is open
+		string val;
+		float value;
+		int pbs = 0;
 
-		for (int i = 0; i < dataArray.size(); i++)
-		{
-			std::stringstream newLine(line);
-			newLine >> value >> std::ws;
-			weight(pbs, i) = value;
+		while (getline(newfile, val, ' ')) { //read data from file object and put it into string.
+			
+
+			for (int i = 0; i < dataArray.size(); i++) {
+
+				weight(pbs, i) = std::stof(val);
+
+			}
+
+			//cout << weight(pbs) << endl;
+
+			pbs++;
+
 		}
 
-		pbs++;
+		newfile.close(); //close the file object.
+
 	}
 
-	std::cout << weight.size() << endl;
 }
 
 int frame_num = 0;
+int j = 0;
 
 void updateScene() {
 
 	if (animate) {
-		
+
 		for (int i = 0; i < dataArray.size(); i++) {
 
-			// w is being set to zero always - weight array is wrong
-			w[i] = weight(frame_num, i);
+			w[i] = weight(j);
+			j++;
 		}
+
+		//cout << weight(frame_num) << endl;
 
 		frame_num++;
 
-		if (frame_num == weight.size()) {
+		if (frame_num == 250) {
 
 			animate = false;
 			frame_num = 0;
@@ -446,6 +458,7 @@ void init()
 	createBMatrix();
 	generateObjectBufferMesh(f0);
 	readTextFile();
+
 }
 
 // Placeholder code for the keypress
@@ -482,10 +495,6 @@ void keypress(unsigned char key, int x, int y) {
 		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp));
 		std::cout << "camera pos: " << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << endl;
 		break;
-
-	case 'p':
-		animate = true;
-
 	}
 
 }
