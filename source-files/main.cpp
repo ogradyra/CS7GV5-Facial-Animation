@@ -375,7 +375,7 @@ void display() {
 
 void readTextFile() {
 
-	std::ifstream input("animation.txt");
+	std::ifstream input("U:/animation_proj/Project1/Project1/animation.txt");
 	std::string line;
 	float value;
 
@@ -411,6 +411,7 @@ void updateScene() {
 		if (frame_num == weight.size()) {
 
 			animate = false;
+			frame_num = 0;
 		}
 
 	}
