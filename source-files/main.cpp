@@ -334,6 +334,9 @@ void display() {
 
 	}
 
+	if (ImGui::Button("Play Animation"))
+		animate = true;
+
 	ImGui::End();
 
 	ImGui::Render();
@@ -428,6 +431,7 @@ void updateScene() {
 
 			animate = false;
 			frame_num = 0;
+			j = 0;
 		}
 
 	}
