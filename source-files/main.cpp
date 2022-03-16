@@ -33,6 +33,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include <glm/gtx/euler_angles.hpp>
+#include "glm/gtx/string_cast.hpp"
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
@@ -319,6 +321,50 @@ void createBMatrix() {
 }
 #pragma endregion BLENDSHAPE_FUNCTIONS
 
+#pragma region VERTEX_MANIPULATORS
+
+glm::vec3 vertexPicker(int x, int y, glm::mat4 VM, glm::mat4 P) {
+
+	glm::vec3 window;
+	window.x = x;
+	window.y = height - y - 1;
+	glReadPixels(x, height - y - 1, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &window.z);
+
+	/* get object coordinates */
+	glm::vec3 object = glm::unProject(window, VM, P, glm::vec4(0.0f, 0.0f, width, height));
+	std::cout << "object coordinates are " << glm::to_string(object) << endl;
+
+	/* find nearest vertex */
+	GLfloat dist = 10;
+	GLfloat temp = 0.0f;
+	GLuint m_index = 0; /* index of mesh with closest vertex */
+	GLuint v_index = 0; /* index of closest vertex */
+
+	for (int i = 0; i < neutral.meshVertices.size(); i += 3) {
+
+		glm::vec3 pos(neutral.meshVertices[i], neutral.meshVertices[i + 1], neutral.meshVertices[i + 2]);
+		temp = glm::distance(object, pos);
+
+			if (temp <= dist) {
+				dist = temp;
+				v_index = i;
+			}
+	}
+
+	glm::vec3 vertex(neutral.meshVertices[v_index], neutral.meshVertices[v_index + 1], neutral.meshVertices[v_index] + 2);
+
+	constraints.push_back(v_index); //add index of constrained vertex to list of constraints
+	m0.conservativeResize(constraints.size() * 3);
+	m0(3 * constraints.size() - 3) = vertex.x;
+	m0(3 * constraints.size() - 2) = vertex.y;
+	m0(3 * constraints.size() - 1) = vertex.z;
+	return vertex;
+	
+}
+
+
+#pragma endregion VETREX_MANIPULATORS
+
 void display() {
 
 	// --------------------------------- UI --------------------------------------
@@ -457,45 +503,6 @@ void init()
 
 }
 
-// Placeholder code for the keypress
-void keypress(unsigned char key, int x, int y) {
-
-	switch (key) {
-	case 'z':
-		// move camera backwards
-		cameraPos += glm::vec3(0.0f, 0.0f, 2.0f);
-		std::cout << "camera pos: " << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << endl;
-		break;
-	case 'x':
-		// move camera forewards
-		cameraPos -= glm::vec3(0.0f, 0.0f, 2.0f);
-		std::cout << "camera pos: " << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << endl;
-		break;
-	case 'w':
-		// move camera upwards
-		cameraPos += glm::vec3(0.0f, 2.0f, 0.0f);
-		std::cout << "camera pos: " << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << endl;
-		break;
-	case 's':
-		// move camera downwards
-		cameraPos -= glm::vec3(0.0f, 2.0f, 0.0f);
-		std::cout << "camera pos: " << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << endl;
-		break;
-	case 'a':
-		// move camera left
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp));
-		std::cout << "camera pos: " << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << endl;
-		break;
-	case 'd':
-		// move camera right
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp));
-		std::cout << "camera pos: " << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << endl;
-		break;
-	}
-
-}
-
-
 int main(int argc, char** argv) {
 
 	// Set up the window
@@ -510,7 +517,7 @@ int main(int argc, char** argv) {
 	// Tell glut where the display function is
 	glutDisplayFunc(display);
 	glutIdleFunc(updateScene);
-	glutKeyboardFunc(keypress);
+	//glutKeyboardFunc(keypress);
 	//glutSpecialFunc(specialKeys);
 
 	// A call to glewInit() must be done after glut is initialized!
