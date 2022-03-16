@@ -34,6 +34,9 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
+
 
 #pragma region MESH LOADING
 /*----------------------------------------------------------------------------
@@ -124,6 +127,11 @@ Eigen::VectorXf f = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1); // F
 
 Eigen::MatrixXf weight = Eigen::MatrixXf::Zero(neutral.numVertices * 3, k);
 std::vector<MeshLoader> dataArray;
+
+Eigen::VectorXf m, m0;
+std::vector<int> constraints;
+float alpha = 2;
+float mu = 0.0001;
 
 bool animate = true;
 
@@ -265,6 +273,7 @@ void generateObjectBufferMesh(Eigen::VectorXf face) {
 }
 #pragma endregion VBO_FUNCTIONS
 
+#pragma region BLENDSHAPE_FUNCTIONS
 void blendshape_array() {
 
 	dataArray.push_back(jaw_open);
@@ -309,6 +318,7 @@ void createBMatrix() {
 
 	}
 }
+#pragma endregion BLENDSHAPE_FUNCTIONS
 
 void display() {
 
@@ -373,6 +383,75 @@ void display() {
 	glutSwapBuffers();
 }
 
+
+glm::vec3 vertexPicker(int x, int y, glm::mat4 VM, glm::mat4 P){
+	
+	glm::vec3 window;
+	window.x = x;
+	window.y = height - y - 1;
+	glReadPixels(x, height - y - 1, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &window.z);
+
+	///* get object coordinates */
+	//glm::vec3 object = glm::unProject(window, VM, P, glm::vec4(0.of, 0.0f, width, height));
+	//std::cout << "object coordinates are " « glm::to_string(object) << endl;
+
+	///* find nearest vertex */
+	//GLfloat dist = 10)
+	//GLfloat temp = 0.0f;
+	//GLuint m_index = 0; /* index of mesh with closest vertex */
+	//GLuint v_index = 0; /* index of closest vertex */
+
+	///* brute force through all vertices to find nearest one */
+	//for (int i = 0; i < dataArray.size(); i++) {
+	//	for (int j = 0; j < dataArray[n].meshVertices.size(); j++) {
+	//		temp = glm::distance(object, dataArray[i].meshVertices[j]);
+
+	//		if (temp <= dist) {
+	//			dist = temp;
+	//			m_index = i;
+	//			v_index = j;
+	//		}
+	//	}
+
+	//	glm::vec3 vertex = dataArray[i].meshVertices[j];
+
+	//	constraints.push_back(v_index); //add index of constrained vertex to list of constraints
+	//	m0.conservativeResize(constraints.size() * 3);
+	//	m0(3 * constraints.size() - 3) = vertex.X;
+	//	m0(3 * constraints.size() - 2) = vertex.y;
+	//	m0(3 * constraints.size() - 1) = vertex.z;
+	//	return vertex;
+	//}
+}
+
+
+//void my_direct_manip_method(...)
+//{
+//	unsigned int  num_rows = ? ? ? ;
+//	unsigned int  num_cols = ? ? ? ;
+//
+//	Eigen::MatrixXf A;
+//	Eigen::VectorXf b
+//	//setup left-hand side
+//	Eigen::MatrixXf B(num_rows, num_cols); //the delta-blendshape matrix + additional weight normalization
+//
+//	// fill the matrix B by acessing element-wise B(row,column)=??? 
+//
+//	// setup right-hand side
+//	Eigen::VectorXf b(num_rows);
+//	// fill the vector b by acessing element-wise b(row)=??? 
+//
+//	//solve the least-squares problem A * w = b with A=BtB and b= Btb
+//	//the function B.transpose() returns the transpose of a matrix
+//
+//	Eigen::LDLT<Eigen::MatrixXf> solver(A);
+//	Eigen::VectorXf w = solver.solve(b);
+//
+//	//copy back the weights my_weights[row] = w(row)
+//
+//}
+
+
 void readTextFile() {
 
 	std::ifstream input("U:/animation_proj/Project1/Project1/animation.txt");
@@ -392,6 +471,8 @@ void readTextFile() {
 
 		pbs++;
 	}
+
+	std::cout << weight.size() << endl;
 }
 
 int frame_num = 0;
