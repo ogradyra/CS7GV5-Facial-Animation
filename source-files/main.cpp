@@ -132,7 +132,7 @@ std::vector<int> constraints;
 float alpha = 2;
 float mu = 0.0001;
 
-bool animate = true;
+bool animate = false;
 
 // Shader Functions- click on + to expand
 #pragma region SHADER_FUNCTIONS
@@ -277,28 +277,28 @@ void blendshape_array() {
 
 	dataArray.push_back(jaw_open);
 	dataArray.push_back(kiss);
+	dataArray.push_back(l_brow_lower);
+	dataArray.push_back(l_brow_narrow);
+	dataArray.push_back(l_brow_raise);
+	dataArray.push_back(l_eye_closed);
+	dataArray.push_back(l_eye_lower_open);
+	dataArray.push_back(l_eye_upper_open);
+	dataArray.push_back(l_nose_wrinkle);
+	dataArray.push_back(l_puff);
+	dataArray.push_back(l_sad);
 	dataArray.push_back(l_smile);
 	dataArray.push_back(l_suck);
-	dataArray.push_back(l_sad);
-	dataArray.push_back(l_puff);
-	dataArray.push_back(l_nose_wrinkle);
-	dataArray.push_back(l_eye_upper_open);
-	dataArray.push_back(l_eye_lower_open);
-	dataArray.push_back(l_eye_closed);
-	dataArray.push_back(l_brow_raise);
-	dataArray.push_back(l_brow_narrow);
-	dataArray.push_back(l_brow_lower);
+	dataArray.push_back(r_brow_lower);
+	dataArray.push_back(r_brow_narrow);
+	dataArray.push_back(r_brow_raise);
+	dataArray.push_back(r_eye_closed);
+	dataArray.push_back(r_eye_lower_open);
+	dataArray.push_back(r_eye_upper_open);
+	dataArray.push_back(r_nose_wrinkle);
+	dataArray.push_back(r_puff);
+	dataArray.push_back(r_sad);
 	dataArray.push_back(r_smile);
 	dataArray.push_back(r_suck);
-	dataArray.push_back(r_sad);
-	dataArray.push_back(r_puff);
-	dataArray.push_back(r_nose_wrinkle);
-	dataArray.push_back(r_eye_upper_open);
-	dataArray.push_back(r_eye_lower_open);
-	dataArray.push_back(r_eye_closed);
-	dataArray.push_back(r_brow_raise);
-	dataArray.push_back(r_brow_narrow);
-	dataArray.push_back(r_brow_lower);
 }
 
 void createF0Matrix() {
@@ -382,7 +382,7 @@ void display() {
 	glutSwapBuffers();
 }
 
-Eigen::MatrixXf weight = Eigen::MatrixXf::Zero(neutral.numVertices * 3, k);
+Eigen::VectorXf weight = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1);
 
 void readTextFile() {
 
@@ -391,19 +391,13 @@ void readTextFile() {
 
 	if (newfile.is_open()) { //checking whether the file is open
 		string val;
-		float value;
 		int pbs = 0;
 
 		while (getline(newfile, val, ' ')) { //read data from file object and put it into string.
-			
 
-			for (int i = 0; i < dataArray.size(); i++) {
+			weight(pbs) = std::stof(val);
 
-				weight(pbs, i) = std::stof(val);
-
-			}
-
-			//cout << weight(pbs) << endl;
+			cout << weight(pbs) << endl;
 
 			pbs++;
 
@@ -427,8 +421,6 @@ void updateScene() {
 			w[i] = weight(j);
 			j++;
 		}
-
-		//cout << weight(frame_num) << endl;
 
 		frame_num++;
 
