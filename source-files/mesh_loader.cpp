@@ -1,4 +1,5 @@
-// Taken from https://www.keithlantz.net/2011/10/a-preliminary-wavefront-obj-loader-in-c/
+// Taken from https://github.com/SineadGalbraith/Facial-Animation/blob/main/Lab04/MeshLoader.cpp and 
+// https://www.keithlantz.net/2011/10/a-preliminary-wavefront-obj-loader-in-c/
 
 #include "mesh_loader.h"
 // Default Constructor
