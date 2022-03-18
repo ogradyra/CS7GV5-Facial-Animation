@@ -19,7 +19,9 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
-// Taken from https://www.keithlantz.net/2011/10/a-preliminary-wavefront-obj-loader-in-c/
+// Taken from https://github.com/SineadGalbraith/Facial-Animation/blob/main/Lab04/MeshLoader.h and 
+// https://www.keithlantz.net/2011/10/a-preliminary-wavefront-obj-loader-in-c/
+
 struct vertexData {
 	std::vector<float> vertex;
 	void normalize() {
