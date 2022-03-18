@@ -47,7 +47,7 @@ MESH TO LOAD
 // this mesh is a dae file format but you should be able to use any other format too, obj is typically what is used
 // put the mesh in your project directory, or provide a filepath for it here
 MeshLoader neutral("U:/animation_proj/Project1/Project1/models/neutral.obj");
-//MeshLoader jaw_open("U:/animation_proj/Project1/Project1/models/Mery_jaw_open.obj");
+MeshLoader jaw_open("U:/animation_proj/Project1/Project1/models/Mery_jaw_open.obj");
 //MeshLoader kiss("U:/animation_proj/Project1/Project1/models/Mery_kiss.obj");
 //MeshLoader r_smile("U:/animation_proj/Project1/Project1/models/Mery_r_smile.obj");
 //MeshLoader r_suck("U:/animation_proj/Project1/Project1/models/Mery_r_suck.obj");
@@ -277,8 +277,8 @@ void generateObjectBufferMesh(Eigen::VectorXf face) {
 #pragma region BLENDSHAPE_FUNCTIONS
 void blendshape_array() {
 
-	/*dataArray.push_back(jaw_open);
-	dataArray.push_back(kiss);
+	dataArray.push_back(jaw_open);
+	/*dataArray.push_back(kiss);
 	dataArray.push_back(l_brow_lower);
 	dataArray.push_back(l_brow_narrow);
 	dataArray.push_back(l_brow_raise);
@@ -323,8 +323,6 @@ void createBMatrix() {
 
 #pragma region VERTEX_MANIPULATORS
 
-GLuint v_index = 0; /* index of closest vertex */
-
 glm::vec3 vertex_picker(int x, int y, glm::mat4 VM, glm::mat4 P) {
 
 	glm::vec3 window;
@@ -339,16 +337,17 @@ glm::vec3 vertex_picker(int x, int y, glm::mat4 VM, glm::mat4 P) {
 	/* find nearest vertex */
 	GLfloat dist = 10;
 	GLfloat temp = 0.0f;
+	GLuint v_index = 0; /* index of closest vertex */
 
 	for (int i = 0; i < neutral.meshVertices.size(); i += 3) {
 
 		glm::vec3 pos(neutral.meshVertices[i], neutral.meshVertices[i + 1], neutral.meshVertices[i + 2]);
 		temp = glm::distance(object, pos);
 
-			if (temp <= dist) {
-				dist = temp;
-				v_index = i;
-			}
+		if (temp <= dist) {
+			dist = temp;
+			v_index = i;
+		}
 	}
 
 	glm::vec3 vertex(neutral.meshVertices[v_index], neutral.meshVertices[v_index + 1], neutral.meshVertices[v_index + 2]);
@@ -358,7 +357,7 @@ glm::vec3 vertex_picker(int x, int y, glm::mat4 VM, glm::mat4 P) {
 	m0(3 * constraints.size() - 3) = vertex.x;
 	m0(3 * constraints.size() - 2) = vertex.y;
 	m0(3 * constraints.size() - 1) = vertex.z;
-	return vertex;	
+	return vertex;
 }
 
 void get_mouse_loc(int x, int y, glm::mat4 VM, glm::mat4 P) {
@@ -367,13 +366,12 @@ void get_mouse_loc(int x, int y, glm::mat4 VM, glm::mat4 P) {
 	window.y = height - y - 1;
 	glReadPixels(x, height - y - 1, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &window.z);
 
-	glm::vec3 targetVerticePos = glm::unProject(window, VM, P, glm::vec4(0.0f, 0.0f, width, height));
+	glm::vec3 targetVertexPos = glm::unProject(window, VM, P, glm::vec4(0.0f, 0.0f, width, height));
 
-	//constraints.push_back(v_index); //add index of constrained vertex to list of constraints
 	m.conservativeResize(constraints.size() * 3);
-	m(3 * constraints.size() - 3) = targetVerticePos.x;
-	m(3 * constraints.size() - 2) = targetVerticePos.y;
-	m(3 * constraints.size() - 1) = targetVerticePos.z;
+	m(3 * constraints.size() - 3) = targetVertexPos.x;
+	m(3 * constraints.size() - 2) = targetVertexPos.y;
+	m(3 * constraints.size() - 1) = targetVertexPos.z;
 
 	cout << "m0" << m0 << endl;
 	cout << "m" << m << endl;
@@ -382,7 +380,7 @@ void get_mouse_loc(int x, int y, glm::mat4 VM, glm::mat4 P) {
 
 Eigen::VectorXf my_direct_manip_method() {
 
-	// equation to solve for w: (transpose(B2)*B2 + (alpha + mu)I)w = transpose(B2)(m - m0) + alpha(w-1)
+	//equation to solve for w: (transpose(B2) * B2 + (alpha + mu)I)w = transpose(B2)(m - m0) + alpha(w - 1)
 	// in the form Aw = b
 
 	// setup left-hand side
@@ -391,6 +389,7 @@ Eigen::VectorXf my_direct_manip_method() {
 	for (int i = 0; i < constraints.size(); i++) {
 		for (int j = 0; j < dataArray.size(); j++) {
 			B2(3 * i, j - 1) = B(3 * constraints[i], j - 1);
+			cout << "B2.x: " << B2(3 * i, j - 1);
 			B2(3 * i + 1, j - 1) = B(3 * constraints[i] + 1, j - 1);
 			B2(3 * i + 2, j - 1) = B(3 * constraints[i] + 2, j - 1);
 		}
@@ -422,8 +421,8 @@ void display() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGLUT_NewFrame();
 
-	ImGui::Begin("Facial Weights Controller");                   
-	
+	ImGui::Begin("Facial Weights Controller");
+
 	for (int i = 0; i < dataArray.size(); i++) {
 
 		ImGui::SliderFloat(expressions[i], &w[i], 0.0f, 1.0f);
@@ -560,7 +559,7 @@ void mouse_click(int button, int state, int x, int y) {
 		std::cout << "MOUSE DOWN X: " << x << std::endl;
 		std::cout << "MOUSE DOWN Y: " << y << std::endl;
 
-		//glm::vec3 mouse_pos = vertex_picker(x, y, view, persp_proj);
+		glm::vec3 mouse_pos = vertex_picker(x, y, view, persp_proj);
 	}
 
 	if (button == 0 && state == GLUT_UP) {
@@ -568,9 +567,9 @@ void mouse_click(int button, int state, int x, int y) {
 		std::cout << "MOUSE UP X: " << x << std::endl;
 		std::cout << "MOUSE UP Y: " << y << std::endl;
 
-		//get_mouse_loc(x, y, view, persp_proj);
+		get_mouse_loc(x, y, view, persp_proj);
 		//w = my_direct_manip_method();
-		
+
 	}
 
 }
