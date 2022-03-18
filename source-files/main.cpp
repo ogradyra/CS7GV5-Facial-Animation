@@ -121,13 +121,15 @@ float fov = 45.0f;
 
 unsigned int neutral_vbo1, neutral_vbo2, neutral_vao;
 
+// num facial expressions
 int k = 24;
+// f0 = f + Bw
 Eigen::VectorXf f0 = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1); // F0
 Eigen::MatrixXf B = Eigen::MatrixXf::Zero(neutral.numVertices * 3, k); // B
 Eigen::VectorXf w = Eigen::VectorXf::Zero(k, 1); // w
 Eigen::VectorXf f = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1); // F
 
-std::vector<MeshLoader> dataArray;
+std::vector<MeshLoader> faceMeshes;
 
 Eigen::VectorXf m = Eigen::VectorXf::Zero(3, 1);
 Eigen::VectorXf m0 = Eigen::VectorXf::Zero(3, 1);
@@ -136,7 +138,6 @@ GLuint constraint = 0;
 float alpha = 2;
 float mu = 0.001;
 
-bool vertex_manipulate = false;
 bool animate = false;
 
 // Shader Functions- click on + to expand
@@ -280,44 +281,49 @@ void generateObjectBufferMesh(Eigen::VectorXf face) {
 #pragma region BLENDSHAPE_FUNCTIONS
 void blendshape_array() {
 
-	dataArray.push_back(jaw_open);
-	dataArray.push_back(kiss);
-	dataArray.push_back(l_brow_lower);
-	dataArray.push_back(l_brow_narrow);
-	dataArray.push_back(l_brow_raise);
-	dataArray.push_back(l_eye_closed);
-	dataArray.push_back(l_eye_lower_open);
-	dataArray.push_back(l_eye_upper_open);
-	dataArray.push_back(l_nose_wrinkle);
-	dataArray.push_back(l_puff);
-	dataArray.push_back(l_sad);
-	dataArray.push_back(l_smile);
-	dataArray.push_back(l_suck);
-	dataArray.push_back(r_brow_lower);
-	dataArray.push_back(r_brow_narrow);
-	dataArray.push_back(r_brow_raise);
-	dataArray.push_back(r_eye_closed);
-	dataArray.push_back(r_eye_lower_open);
-	dataArray.push_back(r_eye_upper_open);
-	dataArray.push_back(r_nose_wrinkle);
-	dataArray.push_back(r_puff);
-	dataArray.push_back(r_sad);
-	dataArray.push_back(r_smile);
-	dataArray.push_back(r_suck);
+	// populate vector with expression meshes
+	faceMeshes.push_back(jaw_open);
+	faceMeshes.push_back(kiss);
+	faceMeshes.push_back(l_brow_lower);
+	faceMeshes.push_back(l_brow_narrow);
+	faceMeshes.push_back(l_brow_raise);
+	faceMeshes.push_back(l_eye_closed);
+	faceMeshes.push_back(l_eye_lower_open);
+	faceMeshes.push_back(l_eye_upper_open);
+	faceMeshes.push_back(l_nose_wrinkle);
+	faceMeshes.push_back(l_puff);
+	faceMeshes.push_back(l_sad);
+	faceMeshes.push_back(l_smile);
+	faceMeshes.push_back(l_suck);
+	faceMeshes.push_back(r_brow_lower);
+	faceMeshes.push_back(r_brow_narrow);
+	faceMeshes.push_back(r_brow_raise);
+	faceMeshes.push_back(r_eye_closed);
+	faceMeshes.push_back(r_eye_lower_open);
+	faceMeshes.push_back(r_eye_upper_open);
+	faceMeshes.push_back(r_nose_wrinkle);
+	faceMeshes.push_back(r_puff);
+	faceMeshes.push_back(r_sad);
+	faceMeshes.push_back(r_smile);
+	faceMeshes.push_back(r_suck);
 }
 
-void createF0Matrix() {
+void create_f0() {
+
+	// populate f0 with every vertex in the neutral mesh
 	for (int i = 0; i < neutral.meshVertices.size(); i++) {
 		f0(i) = neutral.meshVertices[i];
 	}
 }
 
-void createBMatrix() {
+void create_B() {
 
-	for (int n = 0; n < dataArray.size(); n++) {
+	// for each facial expression
+	for (int n = 0; n < faceMeshes.size(); n++) {
 
-		for (int i = 0; i < dataArray[n].meshVertices.size(); i++) {
-			B(i, n) = dataArray[n].meshVertices[i] - f0[i];
+		// populate B with every vertex in each blend-shape
+		for (int i = 0; i < faceMeshes[n].meshVertices.size(); i++) {
+			B(i, n) = faceMeshes[n].meshVertices[i] - f0[i];
 		}
 
 	}
@@ -333,16 +339,17 @@ void get_m0(int x, int y, glm::mat4 VM, glm::mat4 P) {
 	window.y = height - y - 1;
 	glReadPixels(x, height - y - 1, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &window.z);
 
-	/* get object coordinates */
+	// get x, y, z coordinates mouse down position
 	glm::vec3 initialVertexPos = glm::unProject(window, VM, P, glm::vec4(0.0f, 0.0f, width, height));
 
-	/* find nearest vertex */
+	// find nearest vertex
 	GLfloat dist = 10;
 	GLfloat temp = 0.0f;
-	GLuint v_index = 0; /* index of closest vertex */
+	GLuint v_index = 0; // index of closest vertex
 
 	for (int i = 0; i < neutral.meshVertices.size(); i += 3) {
 
+		// x, y, z coordinates of current mesh vertex
 		glm::vec3 pos(neutral.meshVertices[i], neutral.meshVertices[i + 1], neutral.meshVertices[i + 2]);
 		temp = glm::distance(initialVertexPos, pos);
 
@@ -354,7 +361,9 @@ void get_m0(int x, int y, glm::mat4 VM, glm::mat4 P) {
 
 	glm::vec3 vertex(neutral.meshVertices[v_index], neutral.meshVertices[v_index + 1], neutral.meshVertices[v_index + 2]);
 
+	// constrained index is index of closest vertex
 	constraint = v_index;
+	// m0 is closest vertex
 	m0[0] = vertex.x;
 	m0[1] = vertex.y;
 	m0[2] = vertex.z;
@@ -362,13 +371,16 @@ void get_m0(int x, int y, glm::mat4 VM, glm::mat4 P) {
 }
 
 void get_m(int x, int y, glm::mat4 VM, glm::mat4 P) {
+
 	glm::vec3 window;
 	window.x = x;
 	window.y = height - y - 1;
 	glReadPixels(x, height - y - 1, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &window.z);
 
+	// get x, y, z coordinates mouse up position
 	glm::vec3 targetVertexPos = glm::unProject(window, VM, P, glm::vec4(0.0f, 0.0f, width, height));
 
+	// m is the target vertex
 	m(0) = targetVertexPos.x;
 	m(1) = targetVertexPos.y;
 	m(2) = targetVertexPos.z;
@@ -377,14 +389,14 @@ void get_m(int x, int y, glm::mat4 VM, glm::mat4 P) {
 
 void my_direct_manip_method() {
 
-	//equation to solve for w: (transpose(B2) * B2 + (alpha + mu)I)w = transpose(B2)(m - m0) + alpha(w - 1)
+	// equation to solve for w: (transpose(B2) * B2 + (alpha + mu)I)w = transpose(B2)(m - m0) + alpha(w - 1)
 	// in the form Aw = b
 
 	// setup LHS
 	Eigen::MatrixXf B2 = Eigen::MatrixXf::Zero(3, k);
 
 
-	for (int j = 0; j < dataArray.size(); j++) {
+	for (int j = 0; j < faceMeshes.size(); j++) {
 
 		B2(0, j) = B(constraint, j);
 		B2(1, j) = B(constraint + 1, j);
@@ -394,7 +406,7 @@ void my_direct_manip_method() {
 
 	Eigen::MatrixXf A = B2.transpose() * B2 + (alpha + mu) * Eigen::MatrixXf::Identity(k, k);
 
-	//setup RHS
+	// setup RHS
 	Eigen::VectorXf b(k);
 	b = B2.transpose() * (m - m0) + (alpha * w);
 
@@ -402,7 +414,8 @@ void my_direct_manip_method() {
 	Eigen::LDLT<Eigen::MatrixXf> solver(A);
 	Eigen::VectorXf w_new = solver.solve(b);
 
-	for (int i = 0; i < dataArray.size(); i++) {
+	// make sure weight for each blendshape can only have a value between 0 and 1
+	for (int i = 0; i < faceMeshes.size(); i++) {
 
 		if (0 <= w_new(i) && w_new(i) <= 1)
 
@@ -426,14 +439,14 @@ void display() {
 
 	if (ImGui::Button("Reset")) {
 
-		for (int i = 0; i < dataArray.size(); i++) {
+		for (int i = 0; i < faceMeshes.size(); i++) {
 
 			w[i] = 0;
 
 		}
 	}
 
-	for (int i = 0; i < dataArray.size(); i++) {
+	for (int i = 0; i < faceMeshes.size(); i++) {
 
 		ImGui::SliderFloat(expressions[i], &w[i], 0.0f, 1.0f);
 
@@ -495,6 +508,7 @@ void display() {
 
 Eigen::VectorXf weight = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1);
 
+// Taken from https://www.tutorialspoint.com/read-data-from-a-text-file-using-cplusplus
 void readTextFile() {
 
 	fstream newfile;
@@ -502,6 +516,7 @@ void readTextFile() {
 
 	if (newfile.is_open()) { //checking whether the file is open
 		string val;
+		// num of playbacks
 		int pbs = 0;
 
 		while (getline(newfile, val, ' ')) { //read data from file object and put it into string.
@@ -522,16 +537,19 @@ int j = 0;
 
 void updateScene() {
 
+	// if 'play animation' is pressed
 	if (animate) {
 
-		for (int i = 0; i < dataArray.size(); i++) {
+		for (int i = 0; i < faceMeshes.size(); i++) {
 
+			// populate w with weight matrix containing all values in 'animation.txt'
 			w[i] = weight(j);
 			j++;
 		}
 
 		frame_num++;
 
+		// play animation for length of text file
 		if (frame_num == 250) {
 
 			animate = false;
@@ -541,8 +559,7 @@ void updateScene() {
 
 	}
 
-
-
+	// recalculate f based on updated weights and regenerate face mesh
 	f = f0 + (B * w);
 	generateObjectBufferMesh(f);
 
@@ -553,12 +570,10 @@ void updateScene() {
 void init()
 {
 
-	// Set up the shaders
 	GLuint shaderProgramID = CompileShaders();
-	// load mesh into a vertex buffer array
 	blendshape_array();
-	createF0Matrix();
-	createBMatrix();
+	create_f0();
+	create_B();
 	generateObjectBufferMesh(f0);
 	readTextFile();
 
@@ -566,14 +581,19 @@ void init()
 
 void mouse_click(int button, int state, int x, int y) {
 
+	// if left mouse button is held down
 	if (button == 0 && state == GLUT_DOWN) {
 
+		// get vertex position of that cursor location
 		get_m0(x, y, view, persp_proj);
 	}
 
+	// if left mouse button is released
 	if (button == 0 && state == GLUT_UP) {
 
+		// get vertex position of new cursor location
 		get_m(x, y, view, persp_proj);
+		// update w based on m0 and m
 		my_direct_manip_method();
 
 	}
