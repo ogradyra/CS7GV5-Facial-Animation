@@ -48,29 +48,29 @@ MESH TO LOAD
 // put the mesh in your project directory, or provide a filepath for it here
 MeshLoader neutral("U:/animation_proj/Project1/Project1/models/neutral.obj");
 MeshLoader jaw_open("U:/animation_proj/Project1/Project1/models/Mery_jaw_open.obj");
-//MeshLoader kiss("U:/animation_proj/Project1/Project1/models/Mery_kiss.obj");
-//MeshLoader r_smile("U:/animation_proj/Project1/Project1/models/Mery_r_smile.obj");
-//MeshLoader r_suck("U:/animation_proj/Project1/Project1/models/Mery_r_suck.obj");
-//MeshLoader r_sad("U:/animation_proj/Project1/Project1/models/Mery_r_sad.obj");
-//MeshLoader r_puff("U:/animation_proj/Project1/Project1/models/Mery_r_puff.obj");
-//MeshLoader r_nose_wrinkle("U:/animation_proj/Project1/Project1/models/Mery_r_nose_wrinkle.obj");
-//MeshLoader r_eye_upper_open("U:/animation_proj/Project1/Project1/models/Mery_r_eye_upper_open.obj");
-//MeshLoader r_eye_lower_open("U:/animation_proj/Project1/Project1/models/Mery_r_lower_open.obj");
-//MeshLoader r_eye_closed("U:/animation_proj/Project1/Project1/models/Mery_r_eye_closed.obj");
-//MeshLoader r_brow_raise("U:/animation_proj/Project1/Project1/models/Mery_r_brow_raise.obj");
-//MeshLoader r_brow_narrow("U:/animation_proj/Project1/Project1/models/Mery_r_brow_narrow.obj");
-//MeshLoader r_brow_lower("U:/animation_proj/Project1/Project1/models/Mery_r_brow_lower.obj");
-//MeshLoader l_smile("U:/animation_proj/Project1/Project1/models/Mery_l_smile.obj");
-//MeshLoader l_suck("U:/animation_proj/Project1/Project1/models/Mery_l_suck.obj");
-//MeshLoader l_sad("U:/animation_proj/Project1/Project1/models/Mery_l_sad.obj");
-//MeshLoader l_puff("U:/animation_proj/Project1/Project1/models/Mery_l_puff.obj");
-//MeshLoader l_nose_wrinkle("U:/animation_proj/Project1/Project1/models/Mery_l_nose_wrinkle.obj");
-//MeshLoader l_eye_upper_open("U:/animation_proj/Project1/Project1/models/Mery_l_eye_upper_open.obj");
-//MeshLoader l_eye_lower_open("U:/animation_proj/Project1/Project1/models/Mery_l_lower_open.obj");
-//MeshLoader l_eye_closed("U:/animation_proj/Project1/Project1/models/Mery_l_eye_closed.obj");
-//MeshLoader l_brow_raise("U:/animation_proj/Project1/Project1/models/Mery_l_brow_raise.obj");
-//MeshLoader l_brow_narrow("U:/animation_proj/Project1/Project1/models/Mery_l_brow_narrow.obj");
-//MeshLoader l_brow_lower("U:/animation_proj/Project1/Project1/models/Mery_l_brow_lower.obj");
+MeshLoader kiss("U:/animation_proj/Project1/Project1/models/Mery_kiss.obj");
+MeshLoader r_smile("U:/animation_proj/Project1/Project1/models/Mery_r_smile.obj");
+MeshLoader r_suck("U:/animation_proj/Project1/Project1/models/Mery_r_suck.obj");
+MeshLoader r_sad("U:/animation_proj/Project1/Project1/models/Mery_r_sad.obj");
+MeshLoader r_puff("U:/animation_proj/Project1/Project1/models/Mery_r_puff.obj");
+MeshLoader r_nose_wrinkle("U:/animation_proj/Project1/Project1/models/Mery_r_nose_wrinkle.obj");
+MeshLoader r_eye_upper_open("U:/animation_proj/Project1/Project1/models/Mery_r_eye_upper_open.obj");
+MeshLoader r_eye_lower_open("U:/animation_proj/Project1/Project1/models/Mery_r_lower_open.obj");
+MeshLoader r_eye_closed("U:/animation_proj/Project1/Project1/models/Mery_r_eye_closed.obj");
+MeshLoader r_brow_raise("U:/animation_proj/Project1/Project1/models/Mery_r_brow_raise.obj");
+MeshLoader r_brow_narrow("U:/animation_proj/Project1/Project1/models/Mery_r_brow_narrow.obj");
+MeshLoader r_brow_lower("U:/animation_proj/Project1/Project1/models/Mery_r_brow_lower.obj");
+MeshLoader l_smile("U:/animation_proj/Project1/Project1/models/Mery_l_smile.obj");
+MeshLoader l_suck("U:/animation_proj/Project1/Project1/models/Mery_l_suck.obj");
+MeshLoader l_sad("U:/animation_proj/Project1/Project1/models/Mery_l_sad.obj");
+MeshLoader l_puff("U:/animation_proj/Project1/Project1/models/Mery_l_puff.obj");
+MeshLoader l_nose_wrinkle("U:/animation_proj/Project1/Project1/models/Mery_l_nose_wrinkle.obj");
+MeshLoader l_eye_upper_open("U:/animation_proj/Project1/Project1/models/Mery_l_eye_upper_open.obj");
+MeshLoader l_eye_lower_open("U:/animation_proj/Project1/Project1/models/Mery_l_lower_open.obj");
+MeshLoader l_eye_closed("U:/animation_proj/Project1/Project1/models/Mery_l_eye_closed.obj");
+MeshLoader l_brow_raise("U:/animation_proj/Project1/Project1/models/Mery_l_brow_raise.obj");
+MeshLoader l_brow_narrow("U:/animation_proj/Project1/Project1/models/Mery_l_brow_narrow.obj");
+MeshLoader l_brow_lower("U:/animation_proj/Project1/Project1/models/Mery_l_brow_lower.obj");
 /*----------------------------------------------------------------------------
 ----------------------------------------------------------------------------*/
 
@@ -129,11 +129,14 @@ Eigen::VectorXf f = Eigen::VectorXf::Zero(neutral.numVertices * 3, 1); // F
 
 std::vector<MeshLoader> dataArray;
 
-Eigen::VectorXf m, m0;
-std::vector<int> constraints;
-float alpha = 2;
-float mu = 0.0001;
+Eigen::VectorXf m = Eigen::VectorXf::Zero(3, 1);
+Eigen::VectorXf m0 = Eigen::VectorXf::Zero(3, 1);
 
+GLuint constraint = 0;
+float alpha = 2;
+float mu = 0.001;
+
+bool vertex_manipulate = false;
 bool animate = false;
 
 // Shader Functions- click on + to expand
@@ -278,7 +281,7 @@ void generateObjectBufferMesh(Eigen::VectorXf face) {
 void blendshape_array() {
 
 	dataArray.push_back(jaw_open);
-	/*dataArray.push_back(kiss);
+	dataArray.push_back(kiss);
 	dataArray.push_back(l_brow_lower);
 	dataArray.push_back(l_brow_narrow);
 	dataArray.push_back(l_brow_raise);
@@ -300,7 +303,7 @@ void blendshape_array() {
 	dataArray.push_back(r_puff);
 	dataArray.push_back(r_sad);
 	dataArray.push_back(r_smile);
-	dataArray.push_back(r_suck);*/
+	dataArray.push_back(r_suck);
 }
 
 void createF0Matrix() {
@@ -323,7 +326,7 @@ void createBMatrix() {
 
 #pragma region VERTEX_MANIPULATORS
 
-glm::vec3 vertex_picker(int x, int y, glm::mat4 VM, glm::mat4 P) {
+void get_m0(int x, int y, glm::mat4 VM, glm::mat4 P) {
 
 	glm::vec3 window;
 	window.x = x;
@@ -331,8 +334,7 @@ glm::vec3 vertex_picker(int x, int y, glm::mat4 VM, glm::mat4 P) {
 	glReadPixels(x, height - y - 1, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &window.z);
 
 	/* get object coordinates */
-	glm::vec3 object = glm::unProject(window, VM, P, glm::vec4(0.0f, 0.0f, width, height));
-	std::cout << "object coordinates are " << glm::to_string(object) << endl;
+	glm::vec3 initialVertexPos = glm::unProject(window, VM, P, glm::vec4(0.0f, 0.0f, width, height));
 
 	/* find nearest vertex */
 	GLfloat dist = 10;
@@ -342,7 +344,7 @@ glm::vec3 vertex_picker(int x, int y, glm::mat4 VM, glm::mat4 P) {
 	for (int i = 0; i < neutral.meshVertices.size(); i += 3) {
 
 		glm::vec3 pos(neutral.meshVertices[i], neutral.meshVertices[i + 1], neutral.meshVertices[i + 2]);
-		temp = glm::distance(object, pos);
+		temp = glm::distance(initialVertexPos, pos);
 
 		if (temp <= dist) {
 			dist = temp;
@@ -352,15 +354,14 @@ glm::vec3 vertex_picker(int x, int y, glm::mat4 VM, glm::mat4 P) {
 
 	glm::vec3 vertex(neutral.meshVertices[v_index], neutral.meshVertices[v_index + 1], neutral.meshVertices[v_index + 2]);
 
-	constraints.push_back(v_index); //add index of constrained vertex to list of constraints
-	m0.conservativeResize(constraints.size() * 3);
-	m0(3 * constraints.size() - 3) = vertex.x;
-	m0(3 * constraints.size() - 2) = vertex.y;
-	m0(3 * constraints.size() - 1) = vertex.z;
-	return vertex;
+	constraint = v_index;
+	m0[0] = vertex.x;
+	m0[1] = vertex.y;
+	m0[2] = vertex.z;
+
 }
 
-void get_mouse_loc(int x, int y, glm::mat4 VM, glm::mat4 P) {
+void get_m(int x, int y, glm::mat4 VM, glm::mat4 P) {
 	glm::vec3 window;
 	window.x = x;
 	window.y = height - y - 1;
@@ -368,31 +369,27 @@ void get_mouse_loc(int x, int y, glm::mat4 VM, glm::mat4 P) {
 
 	glm::vec3 targetVertexPos = glm::unProject(window, VM, P, glm::vec4(0.0f, 0.0f, width, height));
 
-	m.conservativeResize(constraints.size() * 3);
-	m(3 * constraints.size() - 3) = targetVertexPos.x;
-	m(3 * constraints.size() - 2) = targetVertexPos.y;
-	m(3 * constraints.size() - 1) = targetVertexPos.z;
-
-	cout << "m0" << m0 << endl;
-	cout << "m" << m << endl;
+	m(0) = targetVertexPos.x;
+	m(1) = targetVertexPos.y;
+	m(2) = targetVertexPos.z;
 
 }
 
-Eigen::VectorXf my_direct_manip_method() {
+void my_direct_manip_method() {
 
 	//equation to solve for w: (transpose(B2) * B2 + (alpha + mu)I)w = transpose(B2)(m - m0) + alpha(w - 1)
 	// in the form Aw = b
 
-	// setup left-hand side
-	Eigen::MatrixXf B2(constraints.size() * 3, k);
+	// setup LHS
+	Eigen::MatrixXf B2 = Eigen::MatrixXf::Zero(3, k);
 
-	for (int i = 0; i < constraints.size(); i++) {
-		for (int j = 0; j < dataArray.size(); j++) {
-			B2(3 * i, j - 1) = B(3 * constraints[i], j - 1);
-			cout << "B2.x: " << B2(3 * i, j - 1);
-			B2(3 * i + 1, j - 1) = B(3 * constraints[i] + 1, j - 1);
-			B2(3 * i + 2, j - 1) = B(3 * constraints[i] + 2, j - 1);
-		}
+
+	for (int j = 0; j < dataArray.size(); j++) {
+
+		B2(0, j) = B(constraint, j);
+		B2(1, j) = B(constraint + 1, j);
+		B2(2, j) = B(constraint + 2, j);
+
 	}
 
 	Eigen::MatrixXf A = B2.transpose() * B2 + (alpha + mu) * Eigen::MatrixXf::Identity(k, k);
@@ -404,11 +401,15 @@ Eigen::VectorXf my_direct_manip_method() {
 	// solve least squares problem Aw = b
 	Eigen::LDLT<Eigen::MatrixXf> solver(A);
 	Eigen::VectorXf w_new = solver.solve(b);
-	return w_new;
+
+	for (int i = 0; i < dataArray.size(); i++) {
+
+		if (0 <= w_new(i) && w_new(i) <= 1)
+
+			w(i) = w_new(i);
+	}
 
 }
-
-
 #pragma endregion VETREX_MANIPULATORS
 
 glm::mat4 persp_proj;
@@ -423,6 +424,15 @@ void display() {
 
 	ImGui::Begin("Facial Weights Controller");
 
+	if (ImGui::Button("Reset")) {
+
+		for (int i = 0; i < dataArray.size(); i++) {
+
+			w[i] = 0;
+
+		}
+	}
+
 	for (int i = 0; i < dataArray.size(); i++) {
 
 		ImGui::SliderFloat(expressions[i], &w[i], 0.0f, 1.0f);
@@ -431,6 +441,9 @@ void display() {
 
 	if (ImGui::Button("Play Animation"))
 		animate = true;
+
+	ImGui::Text("Selected Vertex Position = (%f, %f, %f)", m0(0), m0(1), m0(2));
+	ImGui::Text("Target Vertex Position = (%f, %f, %f)", m(0), m(1), m(2));
 
 	ImGui::End();
 
@@ -469,7 +482,7 @@ void display() {
 	// --------------------------------- FACE --------------------------------------
 
 	glBindVertexArray(neutral_vao);
-	glm::mat4 model = glm::mat4(1.0f);
+	glm::mat4 model = glm::mat4(1.0f);	
 
 	// update uniforms & draw
 	glUniformMatrix4fv(glGetUniformLocation(shaderProgramID, "proj"), 1, GL_FALSE, glm::value_ptr(persp_proj));
@@ -555,23 +568,16 @@ void mouse_click(int button, int state, int x, int y) {
 
 	if (button == 0 && state == GLUT_DOWN) {
 
-
-		std::cout << "MOUSE DOWN X: " << x << std::endl;
-		std::cout << "MOUSE DOWN Y: " << y << std::endl;
-
-		glm::vec3 mouse_pos = vertex_picker(x, y, view, persp_proj);
+		get_m0(x, y, view, persp_proj);
 	}
 
 	if (button == 0 && state == GLUT_UP) {
 
-		std::cout << "MOUSE UP X: " << x << std::endl;
-		std::cout << "MOUSE UP Y: " << y << std::endl;
-
-		get_mouse_loc(x, y, view, persp_proj);
-		//w = my_direct_manip_method();
+		get_m(x, y, view, persp_proj);
+		my_direct_manip_method();
 
 	}
-
+	
 }
 
 int main(int argc, char** argv) {
@@ -588,7 +594,6 @@ int main(int argc, char** argv) {
 	// Tell glut where the display function is
 	glutDisplayFunc(display);
 	glutIdleFunc(updateScene);
-	//glutSpecialFunc(specialKeys);
 
 	// A call to glewInit() must be done after glut is initialized!
 	GLenum res = glewInit();
