@@ -6,10 +6,7 @@ The purpose of this assignment was to implement blendshape-based facial animatio
 - Compute blendshape weights from manipulators
 - Create an interface for setting, selecting and moving vertex manipulators
 
-Interface with blendshape model and panel where blendshape weights can be selected and manipulated:
-![Screenshot](resource-files/face_sc.PNG)
-
-Animation Playback:
+## Animation Playback:
 ![GIF](resource-files/face_anim.gif)
 
 Link to video demonstrating the features listed above:
